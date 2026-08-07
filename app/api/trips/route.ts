@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Trip from "@/models/Trip";
 import { generateItinerary } from "@/lib/generateItinerary";
+import { generateAIItinerary } from "@/lib/generateAIItinerary";
+
 
 // GET all trips
 export async function GET() {
@@ -82,11 +84,25 @@ export async function POST(request: Request) {
       Math.floor(difference / (1000 * 60 * 60 * 24)) + 1;
 
     // Generate destination-specific itinerary 
-      const itinerary = generateItinerary(
-          destination,
-          totalDays,
-          tripType
+      let itinerary;
+
+         try {
+           itinerary = await generateAIItinerary(
+            destination,
+            totalDays,
+            tripType,
+            travelers,
+            budget
+            );
+          } catch (error) {
+        console.log("Gemini failed. Using local itinerary.");
+
+        itinerary = generateItinerary(
+           destination,
+           totalDays,
+           tripType
          );
+         }
 
     // Create trip with itinerary
     const trip = await Trip.create({

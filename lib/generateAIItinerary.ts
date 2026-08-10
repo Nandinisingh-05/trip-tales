@@ -14,76 +14,77 @@ export async function generateAIItinerary(
   destination: string,
   totalDays: number,
   tripType: string,
-  travelers: number,
-  budget: number
+  travelers: string,
+  budget: string
 ): Promise<ItineraryDay[]> {
-const prompt = `
-You are a professional travel planner.
+  const prompt = `
+You are an expert travel planner.
 
-Generate a realistic ${totalDays}-day itinerary.
+Create a realistic ${totalDays}-day travel itinerary.
 
-Destination:
-${destination}
+Destination: ${destination}
+Trip Type: ${tripType}
+Travelers: ${travelers}
+Budget Category: ${budget}
 
-Trip Type:
-${tripType}
+Instructions:
+- Create exactly ${totalDays} days.
+- Give every day a unique title.
+- Include famous tourist attractions.
+- Suggest local food.
+- Suggest local experiences.
+- Include adventure activities if suitable.
+- Do not repeat activities.
+- Keep activities according to the selected budget.
+- Return ONLY valid JSON.
 
-Travelers:
-${travelers}
-
-Budget:
-₹${budget}
-
-Requirements:
-
-- Every day should have a unique title.
-- Mention famous tourist places.
-- Include food recommendations.
-- Include local experiences.
-- Include adventure activities when suitable.
-- Include approximate travel sequence.
-- Activities should fit the budget.
-- Never repeat activities.
-- Make every day interesting.
-
-Return ONLY valid JSON.
+Example:
 
 [
- {
-   "day":1,
-   "title":"Arrival & Mall Road",
-   "activities":[
-      "Check into hotel near Mall Road",
-      "Walk around Mall Road and shop for souvenirs",
-      "Try Himachali cuisine at a local restaurant",
+  {
+    "day": 1,
+    "title": "Arrival & Local Exploration",
+    "activities": [
+      "Check into hotel",
+      "Visit Mall Road",
+      "Enjoy local Himachali lunch",
       "Visit Hadimba Temple",
-      "Enjoy café hopping in Old Manali"
-   ]
- }
+      "Dinner at a local cafe"
+    ]
+  }
 ]
 `;
 
   try {
+    console.log("Generating AI itinerary...");
+
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+     model: "gemini-flash-latest",
       contents: prompt,
-    });
+     });
 
     const text = response.text ?? "";
 
+    console.log("Gemini Response:");
+    console.log(text);
+
     const cleaned = text
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-const start = cleaned.indexOf("[");
-const end = cleaned.lastIndexOf("]");
+    const start = cleaned.indexOf("[");
+    const end = cleaned.lastIndexOf("]");
 
-if (start === -1 || end === -1) {
-  throw new Error("Invalid Gemini response");
-}
+    if (start === -1 || end === -1) {
+      throw new Error("Gemini did not return valid JSON.");
+    }
 
-return JSON.parse(cleaned.slice(start, end + 1));
+    const itinerary = JSON.parse(
+      cleaned.slice(start, end + 1)
+    ) as ItineraryDay[];
+
+    return itinerary;
   } catch (error) {
     console.error("Gemini Error:", error);
     throw error;

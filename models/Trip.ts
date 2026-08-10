@@ -40,15 +40,14 @@ const TripSchema = new Schema(
     },
 
     travelers: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
+       type: String,
+       required: true,
+     },
 
-    budget: {
-      type: Number,
-      required: true,
-    },
+     budget: {
+       type: String,
+       required: true,
+     },
 
     tripType: {
       type: String,

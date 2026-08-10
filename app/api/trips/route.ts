@@ -94,7 +94,7 @@ export async function POST(request: Request) {
             travelers,
             budget
             );
-          } catch (error) {
+          } catch{
         console.log("Gemini failed. Using local itinerary.");
 
         itinerary = generateItinerary(
